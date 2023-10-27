@@ -9,21 +9,20 @@
 5-maquina de estados en arduino y processing 
 6-crear una clase (hecho)
 7-archivos modo append
-8-manejo en memoria de datos
+8-manejo en memoria de datos (hecho)
 */
 RFID rfid(10, 9);       //D10:SDA D9:RST 
 unsigned char status; 
 unsigned char str[MAX_LEN];
 
-String tarjetasAutorizadas [2] = {"0", "19612012715"};  //codigos de las tarjetas autorizadas
+String tarjetasAutorizadas [2] = {"934125410823", "19612012715"};  //codigos de las tarjetas autorizadas
 int tarjetasAutorizadasSize = 2;
 String tarjetaTemporal;                               //Se almacena el codigo de la tarjeta escaneada
 
 Servo Servo1;              
-int cerrado = 15;               //posicion inicial del servo
-int abierto = 75;             //posicion de apertura
+int cerrado = 20;               //posicion inicial del servo
+int abierto = 88;             //posicion de apertura
 boolean locked = true;
-
 int ledRojo = 5;
 int ledVerde = 6;
 
@@ -47,7 +46,7 @@ class Funciones
 
   void Verificar (String temp)    //Funcion para verificar si la tarjeta escaneada esta autorizada
 {
-  boolean granted = false;
+  boolean granted;
   for (int i=0; i <= (tarjetasAutorizadasSize-1); i++)    // se recorre todo el arreglo donde se almacenan los codigos 
   {
     if(tarjetasAutorizadas[i] == temp)      //si el codigo autorizado coincide con la tarjeta escaneada      
@@ -87,6 +86,7 @@ class Funciones
     delay(200);
   }
   Serial.println("Presione 1 para autorizar esta tarjeta, 2 para eliminarla");
+  Serial.println(granted);
 }
 };
 Funciones FuncionesTarjetas;
