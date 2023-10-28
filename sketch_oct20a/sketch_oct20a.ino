@@ -35,23 +35,23 @@ class Funciones
   if (opcion == '1') // si se escribe '1' por teclado se autoriza la tarjeta
     {
       tarjetasAutorizadas[1]=tarjetaTemporal;
-      Serial.println("Tarjeta autorizada");
+      //Serial.println("Tarjeta autorizada");
     }
     if (opcion == '2') // si se escribe '2' se elimina
     {
       tarjetasAutorizadas[1]='0';
-      Serial.println("Tarjeta eliminada");
+      //Serial.println("Tarjeta eliminada");
     } 
   }
 
   void Verificar (String temp)    //Funcion para verificar si la tarjeta escaneada esta autorizada
 {
-  boolean granted;
+  boolean granted = false;
   for (int i=0; i <= (tarjetasAutorizadasSize-1); i++)    // se recorre todo el arreglo donde se almacenan los codigos 
   {
     if(tarjetasAutorizadas[i] == temp)      //si el codigo autorizado coincide con la tarjeta escaneada      
     {
-      Serial.println ("Acceso autorizado");
+      //Serial.println ("Acceso autorizado");
       granted = true;
       if (locked == true)         //abrir si esta cerrado
       {
@@ -75,7 +75,7 @@ class Funciones
   }
   if (granted == false)     //Si la tarjeta no coincide
   {
-    Serial.println ("Acceso denegado");
+    //Serial.println ("Acceso denegado");
     digitalWrite(ledRojo, HIGH);      //secuencia para el led rojo
     delay(200);
     digitalWrite(ledRojo, LOW);
@@ -85,8 +85,8 @@ class Funciones
     digitalWrite(ledRojo, LOW);
     delay(200);
   }
-  Serial.println("Presione 1 para autorizar esta tarjeta, 2 para eliminarla");
-  Serial.println(granted);
+  //Serial.println("Presione 1 para autorizar esta tarjeta, 2 para eliminarla");
+  Serial.print(granted);
 }
 };
 Funciones FuncionesTarjetas;
@@ -108,28 +108,29 @@ void setup()
   digitalWrite(ledVerde, LOW);
   Servo1.attach(3);             //Se conecta el servo al pin 3
   Servo1.write(cerrado);         //Mover el servo a la posicion de cierre
-  Serial.println("Coloque la tarjeta cerca del sensor...");
+  //Serial.println("Coloque la tarjeta cerca del sensor...");
 } 
-
 void loop() 
 { 
   if (rfid.findCard(PICC_REQIDL, str) == MI_OK)   //se espera a que se acerque una tarjeta
   { 
-    Serial.println("Tarjeta encontrada"); 
+    //Serial.println("Tarjeta encontrada"); 
     String temp = "";                             //Se almacena el codigo de la tarjetatemporalmente
     if (rfid.anticoll(str) == MI_OK)              //Deteccion anti colisiones
     { 
-      Serial.print("El numero de serie de la tarjeta es : "); 
+      //Serial.print("El numero de serie de la tarjeta es : "); 
       for (int i = 0; i <= 4; i++)                 //se muestra el codigo por el monitor serie 
       { 
         temp = temp + (0x0F & (str[i] >> 4)); 
         temp = temp + (0x0F & str[i]); 
       } 
-      Serial.println (temp);
+      //Serial.println (temp);
       tarjetaTemporal=temp;
       FuncionesTarjetas.Verificar (temp);     //verificar si la tarjeta esta autorizada
-    } 
-    rfid.selectTag(str); //
+    }
+    rfid.selectTag(str);
+    Serial.print(",");
+    Serial.println(tarjetaTemporal);
   }
   while(Serial.available()>0)
   {
