@@ -14,8 +14,8 @@
 RFID rfid(10, 9);       //D10:SDA D9:RST 
 unsigned char status; 
 unsigned char str[MAX_LEN];
-
-String tarjetasAutorizadas [2] = {"934125410823", "19612012715"};  //codigos de las tarjetas autorizadas
+char opcion;
+String tarjetasAutorizadas [2] = {"0", "19612012715"};  //codigos de las tarjetas autorizadas
 int tarjetasAutorizadasSize = 2;
 String tarjetaTemporal;                               //Se almacena el codigo de la tarjeta escaneada
 
@@ -132,10 +132,17 @@ void loop()
     Serial.print(",");
     Serial.println(tarjetaTemporal);
   }
-  while(Serial.available()>0)
+  if (Serial.available() > 0)
   {
-    char opcion = Serial.read();
-    FuncionesTarjetas.agregartarjeta(tarjetaTemporal, opcion);
+    opcion = Serial.read();
+    if (opcion == '1')
+    {
+      FuncionesTarjetas.agregartarjeta(tarjetaTemporal, opcion);
+    }
+    if (opcion == '2')
+    {
+      FuncionesTarjetas.agregartarjeta(tarjetaTemporal, opcion);
+    }
   }
   rfid.halt();
 }
