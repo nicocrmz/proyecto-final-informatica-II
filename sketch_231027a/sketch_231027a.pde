@@ -1,4 +1,3 @@
-// Variables para el texto de estado
 String status = "";
 String status2= "";
 String code = "";
@@ -24,7 +23,7 @@ void draw()
   String marcaTiempo = nf(hora, 2) + ":" + nf(minuto, 2) + ":" + nf(segundo, 2);
   background(0);
   fill(255);
-  text("Acerque la tarjeta al sensor\n\nPresione 1 para autorizar una tarjeta desconocida \nPresione 2 para denegarla.\n",512,100);
+  text("Acerque la tarjeta al sensor\n\nPresione 1 para autorizar una tarjeta desconocida \nPresione 2 para denegarla \nPresione 3 para Salir.",512,100);
   fill(statusColor);
   text(status, 512, 190);
   fill(255);
@@ -49,27 +48,24 @@ void draw()
 // Esta función se llama cuando se lee una tarjeta NFC
 void onCardRead(int estado, String codigo,String marcaTiempo)
 {
-  // Aquí puedes agregar el código para verificar el ID de la tarjeta
   if (estado == 1)
   {
     status = "Acceso concedido";
-    statusColor = color(0, 255, 0); // Verde
-    registro.println("Autorizado,"+codigo+","+marcaTiempo);
+    statusColor = color(0, 255, 0); 
+    registro.println("Autorizado-"+codigo+"-"+marcaTiempo);
   }
   else
   {
     status = "Acceso denegado";
-    statusColor = color(255, 0, 0); // Rojo
-    registro.println("Denegado,"+codigo+","+marcaTiempo);
+    statusColor = color(255, 0, 0); 
+    registro.println("Denegado-"+codigo+"-"+marcaTiempo);
   }
   code="El codigo de la tarjeta es: " + codigo;
 }
 void keyPressed()
 {
-  // Verifica si la tecla "A" ha sido presionada
   if (key == '1')
   {
-    print("xs");
     puertoSerie.write("1");
     status2 = "Tarjeta autorizada";
     statusColor2= color(0,255,0);
@@ -82,6 +78,7 @@ void keyPressed()
   }
   if(key == '3')
   {
+    registro.flush();
     registro.close();
     exit();
   }
