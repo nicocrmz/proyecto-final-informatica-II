@@ -6,9 +6,9 @@
 2-interfaz grafica en processing 
 3-lecturas de sensores o actuadores (hecho)
 4-indicar estado mediante leds (hecho)
-5-maquina de estados en arduino y processing 
+5-maquina de estados en arduino y processing (hecho)
 6-crear una clase (hecho)
-7-archivos modo append
+7-archivos modo append (hecho)
 8-manejo en memoria de datos (hecho)
 */
 RFID rfid(10, 9);       //D10:SDA D9:RST 
@@ -30,6 +30,7 @@ int ledVerde = 6;
 class Funciones
 {
   public:
+  /*
   void agregartarjeta(String tarjetaTemporal, char opcion) //funcion para decidir si autorizar o eliminar una tarjeta escaneada
   {
   if (opcion == '1') // si se escribe '1' por teclado se autoriza la tarjeta
@@ -43,8 +44,8 @@ class Funciones
       //Serial.println("Tarjeta eliminada");
     } 
   }
-
-  void Verificar (String temp)    //Funcion para verificar si la tarjeta escaneada esta autorizada
+void 
+ void Verificar (String temp)    //Funcion para verificar si la tarjeta escaneada esta autorizada
 {
   boolean granted = false;
   for (int i=0; i <= (tarjetasAutorizadasSize-1); i++)    // se recorre todo el arreglo donde se almacenan los codigos 
@@ -87,7 +88,7 @@ class Funciones
   }
   //Serial.println("Presione 1 para autorizar esta tarjeta, 2 para eliminarla");
   Serial.print(granted);
-}
+}*/
 };
 Funciones FuncionesTarjetas;
 
@@ -108,7 +109,6 @@ void setup()
   digitalWrite(ledVerde, LOW);
   Servo1.attach(3);             //Se conecta el servo al pin 3
   Servo1.write(cerrado);         //Mover el servo a la posicion de cierre
-  //Serial.println("Coloque la tarjeta cerca del sensor...");
 } 
 void loop() 
 { 
@@ -126,7 +126,7 @@ void loop()
       } 
       //Serial.println (temp);
       tarjetaTemporal=temp;
-      FuncionesTarjetas.Verificar (temp);     //verificar si la tarjeta esta autorizada
+    //  FuncionesTarjetas.Verificar (temp);     //verificar si la tarjeta esta autorizada
     }
     rfid.selectTag(str);
     Serial.print(",");
@@ -134,15 +134,40 @@ void loop()
   }
   if (Serial.available() > 0)
   {
-    opcion = Serial.read();
-    if (opcion == '1')
-    {
-      FuncionesTarjetas.agregartarjeta(tarjetaTemporal, opcion);
-    }
-    if (opcion == '2')
-    {
-      FuncionesTarjetas.agregartarjeta(tarjetaTemporal, opcion);
-    }
+  char estado = Serial.read();
+  delay(100);
+    if(estado=='1')
+      {
+      if (locked == true)         //abrir si esta cerrado
+        {
+        Servo1.write(abierto);
+        locked = false;
+        }
+      else if (locked == false)   //cerrar si esta abierto
+        {
+        Servo1.write(cerrado);
+        locked = true;
+        }
+      digitalWrite(ledVerde, HIGH);    //secuencia para el led verde
+      delay(200);
+      digitalWrite(ledVerde, LOW);
+      delay(200);
+      digitalWrite(ledVerde, HIGH);
+      delay(200);
+      digitalWrite(ledVerde, LOW);
+      delay(200);
   }
+  if (estado== '2')
+  {
+    digitalWrite(ledRojo, HIGH);      //secuencia para el led rojo
+    delay(200);
+    digitalWrite(ledRojo, LOW);
+    delay(200);
+    digitalWrite(ledRojo, HIGH);
+    delay(200);
+    digitalWrite(ledRojo, LOW);
+    delay(200);
+  }
+}
   rfid.halt();
 }
