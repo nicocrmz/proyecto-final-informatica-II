@@ -18,20 +18,61 @@ void setup()
   //print(Serial.list());
   puertoSerie = new Serial(this, Serial.list()[1], 9600);
 }
-void onCardRead(int estado, String codigo,String marcaTiempo)
+void keyPressed()
 {
-  if (estado == 1)
+  if (key == '1')
   {
-    status = "Acceso concedido";
-    statusColor = color(0, 255, 0);
+    status2 = "Escaneando...";
+    statusColor2= color(0,255,0);
+    escaneando=1;
   }
-  else
+  if (key == '2')
   {
-    status = "Acceso denegado";
-    statusColor = color(255, 0, 0); 
+    status2 = "Escaneo terminado.";
+    statusColor2= color(0,0,255);
+    escaneando=0;
   }
-  code="El codigo de la tarjeta es: " + codigo;
+  if(key == '3')
+  {
+    exit();
+  }
 }
+void draw()
+{
+  int hora = hour();
+  int minuto = minute();
+  int segundo = second();
+  String marcaTiempo = nf(hora, 2) + ":" + nf(minuto, 2) + ":" + nf(segundo, 2);
+  background(0);
+  fill(255);
+  text("\nPresione 1 para escanear y guardar tarjetas. \nPresione 2 para dejar de escanear. \nPresione 3 para Salir.",512,100);
+  fill(statusColor);
+  text(status, 512, 190);
+  fill(255);
+  text(code,512,230);
+  fill(statusColor2);
+  text(status2, 512,300);
+  if (puertoSerie.available() > 0)
+  {
+    String datos = puertoSerie.readStringUntil('\n');
+    delay(50);
+      if (datos != null)
+      {
+         String[] estados = split(datos,',');
+        if (estados.length !=0)
+          {
+          String codigo = (trim(estados[0]));
+          println(codigo);
+          verificarAcceso(codigo);
+          if(escaneando==1)
+            {
+              appendTextToFile(outFilename,codigo);
+            }
+          }       
+      }
+    }
+}
+
 void appendTextToFile(String filename, String text) // Funcion para escribir en un archivo y crearlo en caso de ser necesario
 {
   File f = new File(dataPath(filename));
@@ -59,73 +100,26 @@ void createFile(File f)// Funcion para crear archivo
     e.printStackTrace();
   }
 } 
-void keyPressed()
-{
-  if (key == '1')
-  {
-    status2 = "Escaneando...";
-    statusColor2= color(0,255,0);
-    escaneando=1;
-  }
-  if (key == '2')
-  {
-    status2 = "Escaneo terminado.";
-    statusColor2= color(0,0,255);
-    escaneando=0;
-  }
-  if(key == '3')
-  {
-    exit();
-  }
-}
 void verificarAcceso(String codigo)
 {
+  int encontrado =0;
   String[] lines = loadStrings(dataPath("log.txt"));
   for (int i = 0; i < lines.length; i++)
   {
     if (codigo.equals(lines[i]))
     {
       puertoSerie.write("1");
-      println("aaaa");
-    }
-    else
-    {
-      puertoSerie.write("2");
+      encontrado=1;
+      status = "Acceso autorizado";
+      statusColor = color(0, 255, 0);
+      break;
     }
   }
-}
-void draw()
-{
-  int hora = hour();
-  int minuto = minute();
-  int segundo = second();
-  String marcaTiempo = nf(hora, 2) + ":" + nf(minuto, 2) + ":" + nf(segundo, 2);
-  background(0);
-  fill(255);
-  text("\nPresione 1 para escanear y guardar tarjetas. \nPresione 2 para dejar de escanear. \nPresione 3 para Salir.",512,100);
-  fill(statusColor);
-  text(status, 512, 190);
-  fill(255);
-  text(code,512,230);
-  fill(statusColor2);
-  text(status2, 512,300);
-  if (puertoSerie.available() > 0)
+  if (encontrado ==0)
   {
-    String datos = puertoSerie.readStringUntil('\n');
-      if (datos != null)
-      {
-         String[] estados = split(datos,',');
-        if (estados.length !=0)
-          {
-          int estado = int(trim(estados[0]));
-          String codigo = (trim(estados[1]));
-          onCardRead(estado,codigo,marcaTiempo);
-          verificarAcceso(codigo);
-          if(escaneando==1)
-            {
-              appendTextToFile(outFilename,codigo);
-            }
-          }       
-      }
-    }
+    puertoSerie.write("2");
+    status = "Acceso denegado";
+    statusColor = color(255, 0, 0);
+  }
+  code="El codigo de la tarjeta es: " + codigo;
 }

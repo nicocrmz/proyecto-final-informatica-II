@@ -129,7 +129,6 @@ void loop()
     //  FuncionesTarjetas.Verificar (temp);     //verificar si la tarjeta esta autorizada
     }
     rfid.selectTag(str);
-    Serial.print(",");
     Serial.println(tarjetaTemporal);
   }
   if (Serial.available() > 0)
