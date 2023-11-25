@@ -11,26 +11,26 @@
 7-archivos modo append (hecho)
 8-manejo en memoria de datos (hecho)
 */
-RFID rfid(10, 9);       //D10:SDA D9:RST 
-unsigned char status; 
-unsigned char str[MAX_LEN];
-char opcion;
-String tarjetasAutorizadas [2] = {"0", "19612012715"};  //codigos de las tarjetas autorizadas
-int tarjetasAutorizadasSize = 2;
-String tarjetaTemporal;                               //Se almacena el codigo de la tarjeta escaneada
-Servo Servo1;              
-int cerrado = 20;               //posicion inicial del servo
-int abierto = 88;             //posicion de apertura
-boolean locked = true;
-int ledRojo = 5;
-int ledVerde = 6;
+RFID rfid(10, 9);  //D10:SDA D9:RST 
+unsigned char str[MAX_LEN]; // Variable que se utiliza para convertir el codigo de las tarjetas de binario a char
+Servo Servo1; //Declaracion del objeto de la clase servo
+boolean locked = true; //Variable que almacena el estado del acceso 
+String tarjetaTemporal; //Se almacena el codigo de la tarjeta escaneada             
+int cerrado = 20; //posicion inicial del servo
+int abierto = 88; //posicion de apertura
+int ledRojo = 5; //Pin del led rojo
+int ledVerde = 6; //Pin del led verde
 const int boton1 = 2; // Pin del primer botón
 const int boton2 = 7; // Pin del segundo botón
 const int boton3 = 4; // Pin del tercer botón
 const int boton4 = 8; // Pin del cuarto botón
-const int pinBuzzer = A0;
-
-//declaracion de la clase que contiene las funciones relacionadas con las tarjetas
+const int pinBuzzer = A0; //Pin del buzzer
+/*
+Declaracion de la clase funciones y el objeto FuncionesTarjetas.
+La funcion "abrir" se encarga de accionar el servo y mostrar el estado mediante los leds y el buzzer.
+Se recibe el estado desde processing. Si el estado es igual a 1, quiere decir que la tarjeta esta autorizada.El led verde parpadea, suena el buzzer y se acciona el servo.
+Si el estado es igual a 0, se hace parpadear el led rojo.
+*/
 class Funciones
 {
   public:
@@ -79,6 +79,11 @@ class Funciones
   }
 };
 Funciones FuncionesTarjetas;
+
+/*
+En el setup se inicializa el modulo RFID, los botones, los leds y la comunicacion por el puerto serie.
+Se mueve el servo a la posicion de bloqueo.
+*/
 void setup() 
 { 
   Serial.begin(9600);    
@@ -98,9 +103,15 @@ void setup()
   digitalWrite(ledRojo, LOW);
   delay(200);
   digitalWrite(ledVerde, LOW);
-  Servo1.attach(3);             //Se conecta el servo al pin 3
-  Servo1.write(cerrado);         //Mover el servo a la posicion de cierre
+  Servo1.attach(3);    // Pin del servo      
+  Servo1.write(cerrado);    //Mover el servo a la posicion de cierre
 } 
+/*
+Se almacena el estado de los botones en las variabes "estadoBoton" y luego se envian por puerto serie a processing, cuando se presione un boton, se mostrara por pantalla en Processing, siempre que la tarjeta escaneada este autorizada.
+El modulo RC522 esta en funcionamiento, cuando detecte una tarjeta, almacenara el codigo de la misma en la variable "tarjetaTemporal".
+Processing determina si la tarjeta esta autorizada y envia el estado a Arduino por el puerto serie.
+
+*/
 void loop() 
 { 
   int estadoBoton1 = digitalRead(boton1);
@@ -112,10 +123,10 @@ void loop()
   Serial.print(estadoBoton3);
   Serial.println(estadoBoton4);
   delay(100);
-  if (rfid.findCard(PICC_REQIDL, str) == MI_OK)   //se espera a que se acerque una tarjeta
+  if (rfid.findCard(PICC_REQIDL, str) == MI_OK)  
   { 
-    String temp = "";                             //Se almacena el codigo de la tarjeta temporalmente
-    if (rfid.anticoll(str) == MI_OK)              //Deteccion anti colisiones
+    String temp = "";                             
+    if (rfid.anticoll(str) == MI_OK)            
     { 
       for (int i = 0; i <= 4; i++)               
       { 

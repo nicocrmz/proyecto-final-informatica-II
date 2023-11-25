@@ -1,53 +1,54 @@
-String status = "";
-String status2= "";
-String code = "";
-color statusColor = color(0);
-color statusColor2 = color(0);
 import processing.serial.*;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 Serial puertoSerie;
-String outFilename ="log.txt";
-int separacion =30;
-float offsetY;
+String status = ""; // Variables que almacenan los textos que aparecen en pantalla
+String status2= "";
+String code = "";
+String outFilename ="codes.txt";
+String outFilename2 = "log.txt";
+String sector="";
+color statusColor = color(0); // color de los textos "status" y status2"
+color statusColor2 = color(0);
+color[][] colores; //Se almacena el color de cada uno de los sectores
+int separacion =30; //Variables para controlar la posicion y el tamano de los sectores en pantalla
 int tamano = 100;
-int[] estadosBotones = new int[4];
-color[][] colores;
-int escaneando=0;
+int[] estadosBotones = new int[4]; //Se almacena el estado de los botones enviados desde Arduino
+int escaneando=0; //Variables que se utilizan como bandera para diferentes funciones
 int autorizado=0;
 int ultimoBotonPresionado = -1;
-String sector="";
-PFont Fuente;
+float offsetY;
+PFont Fuente; // Fuente del texto
 PImage fondo;
 void setup()
 {
   background(0);
   size(800, 600);
   textAlign(CENTER,CENTER);
-  fondo = loadImage("Ground2.jpg");
-  Fuente = createFont("SourceCodePro-Regular.ttf", 24);
+  fondo = loadImage("Ground2.jpg"); //Se carga la imagen de fondo
+  Fuente = createFont("SourceCodePro-Regular.ttf", 24); //Se cambia la fuente
   textFont(Fuente); 
-  surface.setTitle("Control de Acceso");
-  puertoSerie = new Serial(this, Serial.list()[1], 9600);
-  offsetY = height / 2 + tamano /2;
+  surface.setTitle("Control de Acceso"); // Nombre de la ventana de processing
+  puertoSerie = new Serial(this, Serial.list()[1], 9600); //Se abre la comunicacion por puerto serie
+  offsetY = height / 2 + tamano /2; //Posicion vertical para los sectores en pantalla
    for (int i = 0; i < 4; i++)
    {
     estadosBotones[i] = 0;
    }
-  colores = new color[4][4];
+  colores = new color[4][4]; //Mientras el estado de los botones sea igual a cero, los sectores se dibujan con color rojo
   for (int fila = 0; fila < 4; fila++)
-  {
+   {
     for (int columna = 0; columna < 4; columna++)
-    {
+      {
       colores[fila][columna] = color(255, 0, 0); 
-    }
- }
+      }
+   }
 }
 void keyPressed()
 {
   if (key == '1')
   {
-    status2 = "Escaneando...";
+    status2 = "Escaneando..."; 
     statusColor2= color(0,255,0);
     escaneando=1;
   }
@@ -89,15 +90,23 @@ void draw()
   fill(255);
   text(code,400,180);
   fill(statusColor2);
-  text(status2, 400,300);
+  text(status2, 600,160);
   fill(0,255,0);
   text(sector, 400, 240);
+  int hora = hour();
+  int minuto = minute();
+  int segundo = second();
+  String marcaTiempo = nf(hora, 2) + ":" + nf(minuto, 2) + ":" + nf(segundo, 2);
+  int dia = day();    // Día actual
+  int mes = month();  // Mes actual
+  int ano = year();   // Año actual
+  String fechaActual = dia + "/" + mes + "/" + ano;
   if (puertoSerie.available() > 0)
   {
-    String datos = puertoSerie.readStringUntil('\n');
+    String datos = puertoSerie.readStringUntil('\n'); //Se obtiene el codigo de la tarjeta y el estado de los botones por puerto serie
     if(autorizado==1)
     {
-      serialEvent(datos);
+      serialEvent(datos); // Si la tarjeta ya esta autorizada, se le permite al usuario seleccionar el sector al que va a ingresar
       println(datos);
     }
       if (datos !=null)
@@ -105,17 +114,17 @@ void draw()
          String[] estados = split(datos,',');
         if (estados[0].length()>7)
           {
-          String codigo = (trim(estados[0]));
+          String codigo = (trim(estados[0])); // Se separan los datos de los botones y el codigo haciendo uso de un array
           println(codigo);
-          verificarAcceso(codigo);
-          if(escaneando==1)
+          verificarAcceso(codigo,marcaTiempo,fechaActual);
+          if(escaneando==1) // Si el programa esta en modo de escaneo, se llama a la funcion "appendTextToFile" para guardar las tarjetas en un archivo
             {
               appendTextToFile(outFilename,codigo);
             }
           }       
       }
     }
-  float centroX = width / 2 - (2 * tamano + separacion) / 2;
+  float centroX = width / 2 - (2 * tamano + separacion) / 2; //Dibuja los sectores 
   for (int fila = 0; fila < 2; fila++)
   {
     for (int columna = 0; columna < 2; columna++)
@@ -126,10 +135,10 @@ void draw()
     rect(x, y, tamano, tamano,20);
     }
   }
-  if (ultimoBotonPresionado != -1)
+  if (ultimoBotonPresionado != -1) //Cambia de color el sector correspondiente al boton presionado
   {
     sector =("Sector " + (ultimoBotonPresionado + 1));
-    if(autorizado==0)
+    if(autorizado==0)// Si no esta autorizado no se puede seleccionar el sector
     {
       sector="";
     }
@@ -162,10 +171,10 @@ void createFile(File f)
     e.printStackTrace();
   }
 } 
-void verificarAcceso(String codigo)
+void verificarAcceso(String codigo,String tiempo,String fecha)
 {
   int encontrado =0;
-  String[] lines = loadStrings(dataPath("log.txt"));
+  String[] lines = loadStrings(dataPath("codes.txt")); 
   for (int i = 0; i < lines.length; i++)
   {
     if (codigo.equals(lines[i]))
@@ -174,6 +183,8 @@ void verificarAcceso(String codigo)
       encontrado=1;
       autorizado=1;
       status = "Acceso autorizado, Seleccione el sector...";
+      String registro= codigo+"-"+fecha+"-"+tiempo;
+      appendTextToFile(outFilename2, registro);
       statusColor = color(0, 255, 0);
       break;
     }
@@ -186,11 +197,10 @@ void verificarAcceso(String codigo)
     statusColor = color(255, 0, 0);
     sector="";
   }
-  //code="El codigo de la tarjeta es: " + codigo;
 }
 void serialEvent(String entrada)
 {
-    if (entrada !=null)
+    if (entrada !=null) //Recibe el estado de los botones
   {
     entrada = trim(entrada);
     if (entrada.length() == 4)
@@ -204,7 +214,7 @@ void serialEvent(String entrada)
         {
           ultimoBotonPresionado = fila * 2 + columna;
           colores[fila][columna] = color(0, 255, 0); // Verde
-          delay(2000);
+          delay(1000);
         } else
         {
           colores[fila][columna] = color(255, 0, 0); // Rojo
