@@ -12,7 +12,7 @@
 8-manejo en memoria de datos (hecho)
 */
 RFID rfid(10, 9);  //D10:SDA D9:RST 
-unsigned char str[MAX_LEN]; // Variable que se utiliza para convertir el codigo de las tarjetas de binario a char
+unsigned char str[MAX_LEN]; // Variable que se utiliza para convertir el codigo de las tarjetas de binario a una cadena hexadecimal
 Servo Servo1; //Declaracion del objeto de la clase servo
 boolean locked = true; //Variable que almacena el estado del acceso 
 String tarjetaTemporal; //Se almacena el codigo de la tarjeta escaneada             
@@ -87,8 +87,8 @@ Se mueve el servo a la posicion de bloqueo.
 void setup() 
 { 
   Serial.begin(9600);    
-  SPI.begin();           
-  rfid.init();
+  SPI.begin(); //Se inicia la comunicacion con el modulo rfid (Serial peripheral interface)           
+  rfid.init(); //Se inicializa el modulo rfid
   pinMode (pinBuzzer, OUTPUT);
   pinMode(boton1, INPUT);
   pinMode(boton2, INPUT);
@@ -123,10 +123,10 @@ void loop()
   Serial.print(estadoBoton3);
   Serial.println(estadoBoton4);
   delay(100);
-  if (rfid.findCard(PICC_REQIDL, str) == MI_OK)  
+  if (rfid.findCard(PICC_REQIDL, str) == MI_OK)  //Si la funcion findCard devuelve MI_OK quiere decir que se encontro una tarjeta
   { 
     String temp = "";                             
-    if (rfid.anticoll(str) == MI_OK)            
+    if (rfid.anticoll(str) == MI_OK)   //Se pudo identificar la tarjeta rfid encontrada
     { 
       for (int i = 0; i <= 4; i++)               
       { 
@@ -135,14 +135,14 @@ void loop()
       } 
       tarjetaTemporal=temp;
     }
-    rfid.selectTag(str);
+    rfid.selectTag(str); //Se selecciona la ultima tarjeta escaneada para evitar escaneos redundantes
     Serial.println(tarjetaTemporal);
   }
   if (Serial.available() > 0)
   {
-  char estado = Serial.read();
+  char estado = Serial.read(); //Recibe si la tarjeta esta autorizada o no desde processing
   delay(100);
   FuncionesTarjetas.abrir(estado);
 }
-  rfid.halt();
+  rfid.halt(); //Fin de la comunicacion del modulo rfid
 }

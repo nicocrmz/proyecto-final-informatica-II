@@ -146,28 +146,29 @@ void draw()
 }
 void appendTextToFile(String filename, String text)
 {
-  File f = new File(dataPath(filename));
+  File f = new File(dataPath(filename)); //Se crea un objeto file y se obtiene la ruta de acceso al archivo con el nombre especificado
   if(!f.exists())
   {
-    createFile(f);
+    createFile(f);//Si el archivo no existe se crea uno
   }
   try
   {
-    PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(f, true)));
-    out.println(text);
-    out.close();
-  }catch (IOException e)
+    PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(f, true)));//Se crea un printwriter para guardar el texto que se va a escribir el archivo
+    out.println(text); //Se escribe el archivo
+    out.close();//Cierra el printwriter
+  }catch (IOException e) //Si hay algun error durante la escritura del archivo se captura y se muestra por pantalla
   {
       e.printStackTrace();
   }
 }
-void createFile(File f)
+void createFile(File f) 
 {
-  File parentDir = f.getParentFile();
+  File parentDir = f.getParentFile(); //Directorio padre del archivo
   try{
-    parentDir.mkdirs(); 
-    f.createNewFile();
-  }catch(Exception e){
+    parentDir.mkdirs(); //crea el directorio si no existe
+    f.createNewFile(); //crea un archivo en la ruta especificada
+  }catch(Exception e) //Si hay algun error se muestra por pantalla
+  {
     e.printStackTrace();
   }
 } 
@@ -207,12 +208,12 @@ void serialEvent(String entrada)
     {
       for (int i = 0; i < 4; i++)
       {
-        int fila = i / 2;
-        int columna = i % 2;
-        estadosBotones[i] = int(entrada.charAt(i)) - 48;
+        int fila = i / 2; //Se calculan las filas y columnas 
+        int columna = i % 2; //resto
+        estadosBotones[i] = int(entrada.charAt(i)) - 48; //Convierte el carácter actual de la entrada en un número entero y lo almacena en el array
         if (estadosBotones[i] == 1)
         {
-          ultimoBotonPresionado = fila * 2 + columna;
+          ultimoBotonPresionado = fila * 2 + columna; //Se calcula el indice del boton presionado
           colores[fila][columna] = color(0, 255, 0); // Verde
           delay(1000);
         } else
